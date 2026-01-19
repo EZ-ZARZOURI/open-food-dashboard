@@ -1,0 +1,8 @@
+{# @block content The default block #}
+<div
+    class="{{ 'text-sm text-muted-foreground ' ~ attributes.render('class')
+ }}"
+    {{ attributes }}
+>
+    {%- block content %}{% endblock -%}
+</div>
