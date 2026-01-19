@@ -15,11 +15,33 @@ WORKDIR /app
 
 VOLUME /app/var/
 
+# Installer Node.js et npm
+RUN set -eux; \
+    apt-get update && \
+    apt-get install -y curl gnupg build-essential && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
+
+
+# Copier package.json + package-lock.json pour le cache
+COPY package*.json ./
+
+# Installer npm
+RUN npm install
+
+# Copier tout le code pour que Webpack trouve les fichiers
+COPY . .
+
+# Compiler les assets
+RUN npm run build
+
+
 # persistent / runtime deps
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
 	file \
 	git \
+	make \
 	&& rm -rf /var/lib/apt/lists/*
 
 RUN set -eux; \
@@ -37,6 +59,14 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV PHP_INI_SCAN_DIR=":$PHP_INI_DIR/app.conf.d"
 
 ###> recipes ###
+###> doctrine/doctrine-bundle ###
+RUN install-php-extensions pdo_pgsql
+
+# Install PostgreSQL driver
+RUN apt-get update && apt-get install -y libpq-dev \
+    && docker-php-ext-install pdo_pgsql
+	
+###< doctrine/doctrine-bundle ###
 ###< recipes ###
 
 COPY --link frankenphp/conf.d/10-app.ini $PHP_INI_DIR/app.conf.d/
