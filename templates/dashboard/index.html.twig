@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="min-h-screen bg-gray-100">
+
+    {% include 'partials/navbar.html.twig' %}
+
+    <main class="p-6">
+        <div class="mb-6 flex items-center justify-between">
+            <h1 class="text-2xl font-bold">Mon Dashboard</h1>
+
+            <a href="#"
+               class="flex items-center gap-2 p-2 rounded border border-gray-300 hover:bg-blue-100">
+                {{ ux_icon('heroicons:plus', { class: 'w-6 h-6 text-blue-600' }) }}
+                <span>Ajouter un widget</span>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            {% for item in widgetsWithProducts %}
+                {% set widget = item.widget %}
+                {% set products = item.products %}
+
+                <twig:Card class="w-full">
+
+                    {# HEADER WIDGET #}
+                    <twig:Card:Header class="flex items-start gap-4">
+                        <div class="flex-1">
+                            <twig:Card:Title>
+                                {{ widget.filterType ?: 'Produits' }}
+                                {% if widget.filterValue %}
+                                    : {{ widget.filterValue }}
+                                {% endif %}
+                            </twig:Card:Title>
+
+                            <twig:Card:Description>
+                                Page {{ widget.page }} · {{ widget.pageSize }} produits
+                            </twig:Card:Description>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button class="p-2 rounded border hover:bg-gray-100">
+                                {{ ux_icon('heroicons:pencil', { class: 'w-5 h-5 text-blue-600' }) }}
+                            </button>
+                            <button class="p-2 rounded border hover:bg-red-100">
+                                {{ ux_icon('heroicons:trash', { class: 'w-5 h-5 text-red-600' }) }}
+                            </button>
+                        </div>
+                    </twig:Card:Header>
+
+                    {# CONTENU WIDGET : PRODUITS #}
+                    <twig:Card:Content>
+
+                        {% if products is empty %}
+                            <p class="text-gray-500 text-sm">
+                                Aucun produit trouvé pour ce widget.
+                            </p>
+                        {% endif %}
+
+                        {# 👇 GRILLE DE CARTES PRODUITS #}
+                        <div class="grid grid-cols-1 gap-4">
+                            {% for product in products %}
+                                {% include 'components/product_widget.html.twig' with { product } %}
+                            {% endfor %}
+                        </div>
+
+                    </twig:Card:Content>
+
+                </twig:Card>
+            {% endfor %}
+
+        </div>
+    </main>
+</div>
+{% endblock %}

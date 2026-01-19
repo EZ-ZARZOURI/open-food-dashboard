@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="min-h-screen bg-gray-100">
+
+    {% include 'partials/navbar.html.twig' %}
+
+    <main class="p-6">
+    <div class="mb-6 flex items-center justify-between">
+        <h1 class="text-2xl font-bold">
+            Produitss Open Food Facts – Page {{ currentPage }}
+        </h1>
+
+        <!-- Bouton Ajouter -->
+        <a href="#"
+        class="p-2 rounded border border-gray-300 hover:bg-blue-100"
+        aria-label="Ajouter un produit">
+            {{ ux_icon('heroicons:plus', {
+                class: 'w-6 h-6 text-blue-600'
+            }) }}
+        </a>
+    </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for product in products %}
+                {% include 'components/product_widget.html.twig' with { product } %}
+            {% endfor %}
+        </div>
+
+        <div class="mt-8 flex justify-center gap-4">
+            {% if currentPage > 1 %}
+                <a href="?page={{ currentPage - 1 }}" class="btn btn-outline">
+                    &laquo; Précédent
+                </a>
+            {% endif %}
+
+            <a href="?page={{ currentPage + 1 }}" class="btn btn-outline">
+                Suivant &raquo;
+            </a>
+        </div>
+    </main>
+</div>
+{% endblock %}
