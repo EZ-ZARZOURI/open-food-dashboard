@@ -10,18 +10,28 @@ class ProductService
         private HttpClientInterface $httpClient
     ) {}
 
-    public function getProducts(
+    /**
+     * Récupère tous les produits liés à un widget
+     */
+    public function getProductsByWidget(
         ?string $filterType = null,
-        ?string $filterValue = null,
-        int $page = 1,
-        int $pageSize = 6
+        ?string $filterValue = null
     ): array {
-        $url = "https://world.openfoodfacts.org/cgi/search.pl";
-        $url .= "?action=process&json=true";
-        $url .= "&page_size={$pageSize}&page={$page}";
+        $url = '';
+        $limit = 10; // limite de sécurité
 
-        if ($filterType && $filterValue) {
-            $url .= "&tagtype_0={$filterType}&tag_0={$filterValue}";
+        switch ($filterType) {
+            case 'categorie':
+                $url = "https://world.openfoodfacts.org/category/{$filterValue}.json?page_size={$limit}";
+                break;
+
+            case 'marque':
+                $url = "https://world.openfoodfacts.org/brand/{$filterValue}.json?page_size={$limit}";
+                break;
+        }
+
+        if ($url === '') {
+            return [];
         }
 
         $response = $this->httpClient->request('GET', $url);
@@ -34,12 +44,12 @@ class ProductService
         $products = $data['products'] ?? [];
 
         return array_map(fn ($p) => [
-            'name'       => $p['product_name'] ?? null,
-            'brand'      => $p['brands'] ?? null,
-            'code'       => $p['code'] ?? null,
-            'countries'  => $p['countries'] ?? null,
-            'categories' => $p['categories'] ?? null,
-            'imageUrl'   => $p['image_front_url'] ?? null,
+            'name'       => $p['product_name'] ?? 'Nom inconnu',
+            'brand'      => $p['brands'] ?? 'Marque inconnue',
+            'code'       => $p['code'] ?? 'Code inconnu',
+            'countries'  => $p['countries'] ?? 'Pays inconnu',
+            'categories' => $p['categories'] ?? 'Catégorie inconnue',
+            'imageUrl'   => $p['image_front_url'] ?? 'https://placehold.co/200x200?text=No+Image',
         ], $products);
     }
 }

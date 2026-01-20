@@ -2,74 +2,111 @@
 
 {% block body %}
 <div class="min-h-screen bg-gray-100">
-
     {% include 'partials/navbar.html.twig' %}
 
     <main class="p-6">
-        <div class="mb-6 flex items-center justify-between">
-            <h1 class="text-2xl font-bold">Mon Dashboard</h1>
+        <h1 class="text-2xl font-bold mb-6">Mon Dashboard</h1>
 
-            <a href="#"
-               class="flex items-center gap-2 p-2 rounded border border-gray-300 hover:bg-blue-100">
-                {{ ux_icon('heroicons:plus', { class: 'w-6 h-6 text-blue-600' }) }}
-                <span>Ajouter un widget</span>
-            </a>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
+        {# Conteneur horizontal des widgets #}
+        <div class="flex gap-4 overflow-x-auto pb-4">
             {% for item in widgetsWithProducts %}
                 {% set widget = item.widget %}
                 {% set products = item.products %}
 
-                <twig:Card class="w-full">
-
+                {# WIDGET CARD #}
+                <twig:Card class="flex-none w-96 bg-white shadow-md rounded-lg border border-gray-200">
+                    
                     {# HEADER WIDGET #}
-                    <twig:Card:Header class="flex items-start gap-4">
-                        <div class="flex-1">
-                            <twig:Card:Title>
+                    <twig:Card:Header class="flex justify-between items-center border-b border-gray-200 p-4">
+                        <div>
+                            <twig:Card:Title class="font-semibold text-lg">
                                 {{ widget.filterType ?: 'Produits' }}
-                                {% if widget.filterValue %}
-                                    : {{ widget.filterValue }}
-                                {% endif %}
+                                {% if widget.filterValue %}: {{ widget.filterValue }}{% endif %}
                             </twig:Card:Title>
-
-                            <twig:Card:Description>
-                                Page {{ widget.page }} · {{ widget.pageSize }} produits
-                            </twig:Card:Description>
+                            {# <twig:Card:Description class="text-sm text-gray-500">
+                                Page {{ item.currentPage }} / {{ item.totalPages }} · 4 produits
+                            </twig:Card:Description> #}
                         </div>
 
                         <div class="flex gap-2">
-                            <button class="p-2 rounded border hover:bg-gray-100">
+                            <twig:Button size="icon" variant="outline" aria-label="Modifier">
                                 {{ ux_icon('heroicons:pencil', { class: 'w-5 h-5 text-blue-600' }) }}
-                            </button>
-                            <button class="p-2 rounded border hover:bg-red-100">
+                            </twig:Button>
+                            <twig:Button size="icon" variant="outline" aria-label="Supprimer">
                                 {{ ux_icon('heroicons:trash', { class: 'w-5 h-5 text-red-600' }) }}
-                            </button>
+                            </twig:Button>
                         </div>
                     </twig:Card:Header>
 
-                    {# CONTENU WIDGET : PRODUITS #}
-                    <twig:Card:Content>
+                    {# PRODUITS : GRILLE 2x2 #}
+                    <twig:Card:Content class="p-4 grid grid-cols-2 gap-4">
+                        {% for product in products %}
+                            <twig:Card class="bg-gray-50 rounded shadow p-2 flex flex-col">
+                                <twig:Card:Header class="w-full h-32 overflow-hidden rounded">
+                                    <a href="{{ product.imageUrl ?: 'https://placehold.co/600x600?text=No+Image' }}" target="_blank">
+                                        <img src="{{ product.imageUrl ?: 'https://placehold.co/200x200?text=No+Image' }}"
+                                             alt="{{ product.name ?: 'Image inconnue' }}"
+                                             class="w-full h-full object-cover"/>
+                                    </a>
+                                </twig:Card:Header>
 
-                        {% if products is empty %}
-                            <p class="text-gray-500 text-sm">
-                                Aucun produit trouvé pour ce widget.
-                            </p>
-                        {% endif %}
+                                <twig:Card:Content class="flex-1 flex flex-col mt-2">
+                                    <twig:Card:Title class="font-semibold text-sm truncate">
+                                        {{ product.name ?: 'Nom inconnu' }}
+                                    </twig:Card:Title>
+                                    <twig:Card:Description class="text-xs text-gray-500 truncate">
+                                        {{ product.brand ?: 'Marque inconnue' }}
+                                    </twig:Card:Description>
 
-                        {# 👇 GRILLE DE CARTES PRODUITS #}
-                        <div class="grid grid-cols-1 gap-4">
-                            {% for product in products %}
-                                {% include 'components/product_widget.html.twig' with { product } %}
-                            {% endfor %}
-                        </div>
+                                    <twig:Button variant="outline" size="sm" class="mt-1"
+                                                 onclick="this.nextElementSibling.classList.toggle('hidden')">
+                                        Voir détails
+                                    </twig:Button>
 
+                                    {# DÉTAILS CACHÉS #}
+                                    <div class="hidden text-xs text-gray-600 mt-1 space-y-1 w-full break-words">
+                                        <p><strong>Code :</strong> {{ product.code ?: 'Code inconnu' }}</p>
+                                        <p><strong>Pays :</strong> {{ product.countries ?: 'Pays inconnu' }}</p>
+                                        <p><strong>Catégories :</strong> {{ product.categories ?: 'Catégorie inconnue' }}</p>
+                                    </div>
+                                </twig:Card:Content>
+                            </twig:Card>
+                        {% endfor %}
                     </twig:Card:Content>
 
-                </twig:Card>
-            {% endfor %}
+                    {# PAGINATION WIDGET #}
+                   <twig:Card:Footer class="p-4 border-t border-gray-200 flex justify-between">
+    
+                        {# Précédent #}
+                        {% if item.currentPage > 1 %}
+                            <twig:Button
+                                variant="outline"
+                                href="{{ path('dashboard_home', {
+                                    ('page_' ~ widget.id): item.currentPage - 1
+                                }) }}">
+                                Précédent
+                            </twig:Button>
+                        {% else %}
+                            <twig:Button variant="outline" disabled>Précédent</twig:Button>
+                        {% endif %}
 
+                        {# Suivant #}
+                        {% if item.currentPage < item.totalPages %}
+                            <twig:Button
+                                variant="outline"
+                                href="{{ path('dashboard_home', {
+                                    ('page_' ~ widget.id): item.currentPage + 1
+                                }) }}">
+                                Suivant
+                            </twig:Button>
+                        {% else %}
+                            <twig:Button variant="outline" disabled>Suivant</twig:Button>
+                        {% endif %}
+
+                    </twig:Card:Footer>
+                    </twig:Card>
+
+            {% endfor %}
         </div>
     </main>
 </div>
