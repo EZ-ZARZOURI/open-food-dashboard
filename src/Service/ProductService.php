@@ -18,7 +18,7 @@ class ProductService
         ?string $filterValue = null
     ): array {
         $url = '';
-        $limit = 10; // limite de sécurité
+        $limit = 10;
 
         switch ($filterType) {
             case 'categorie':
@@ -34,22 +34,30 @@ class ProductService
             return [];
         }
 
-        $response = $this->httpClient->request('GET', $url);
+        try {
+            $response = $this->httpClient->request('GET', $url, [
+                'timeout' => 5,
+            ]);
 
-        if ($response->getStatusCode() !== 200) {
+            if ($response->getStatusCode() !== 200) {
+                return [];
+            }
+
+            $data = $response->toArray();
+            $products = $data['products'] ?? [];
+
+            return array_map(fn ($p) => [
+                'name'       => $p['product_name'] ?? 'Nom inconnu',
+                'brand'      => $p['brands'] ?? 'Marque inconnue',
+                'code'       => $p['code'] ?? 'Code inconnu',
+                'countries'  => $p['countries'] ?? 'Pays inconnu',
+                'categories' => $p['categories'] ?? 'Catégorie inconnue',
+                'imageUrl'   => $p['image_front_url']
+                    ?? 'https://placehold.co/200x200?text=No+Image',
+            ], $products);
+
+        } catch (\Throwable $e) {
             return [];
         }
-
-        $data = $response->toArray();
-        $products = $data['products'] ?? [];
-
-        return array_map(fn ($p) => [
-            'name'       => $p['product_name'] ?? 'Nom inconnu',
-            'brand'      => $p['brands'] ?? 'Marque inconnue',
-            'code'       => $p['code'] ?? 'Code inconnu',
-            'countries'  => $p['countries'] ?? 'Pays inconnu',
-            'categories' => $p['categories'] ?? 'Catégorie inconnue',
-            'imageUrl'   => $p['image_front_url'] ?? 'https://placehold.co/200x200?text=No+Image',
-        ], $products);
     }
 }
