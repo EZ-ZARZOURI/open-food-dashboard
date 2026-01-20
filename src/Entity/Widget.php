@@ -29,12 +29,6 @@ class Widget
     #[ORM\Column]
     private ?int $position = null;
 
-    #[ORM\Column]
-    private ?int $page = null;
-
-    #[ORM\Column]
-    private ?int $pageSize = null;
-
     public function getId(): ?int
     {
         return $this->id;
