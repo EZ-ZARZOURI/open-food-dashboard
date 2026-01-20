@@ -5,7 +5,15 @@
     {% include 'partials/navbar.html.twig' %}
 
     <main class="p-6">
-        <h1 class="text-2xl font-bold mb-6">Mon Dashboard</h1>
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold">Dashboard</h1>
+
+            <twig:Button size="icon" variant="outline" aria-label="Ajouter Widget"
+                        onclick="alert('Ici tu peux ajouter un widget !')">
+                {{ ux_icon('heroicons:plus', { class: 'w-5 h-5 text-blue-600' }) }}
+            </twig:Button>
+        </div>
+
 
         {# Conteneur horizontal des widgets #}
         <div class="flex gap-4 overflow-x-auto pb-4">
@@ -21,7 +29,7 @@
                         <div>
                             <twig:Card:Title class="font-semibold text-lg">
                                 {{ widget.filterType ?: 'Produits' }}
-                                {% if widget.filterValue %}: {{ widget.filterValue }}{% endif %}
+                                {% if widget.filterValue %} : {{ widget.filterValue|upper }}{% endif %}
                             </twig:Card:Title>
                             {# <twig:Card:Description class="text-sm text-gray-500">
                                 Page {{ item.currentPage }} / {{ item.totalPages }} · 4 produits
@@ -38,7 +46,7 @@
                         </div>
                     </twig:Card:Header>
 
-                    {# PRODUITS : GRILLE 2x2 #}
+                    {# PRODUITS : #}
                     <twig:Card:Content class="p-4 grid grid-cols-2 gap-4">
                         {% for product in products %}
                             <twig:Card class="bg-gray-50 rounded shadow p-2 flex flex-col">
@@ -77,7 +85,7 @@
                     {# PAGINATION WIDGET #}
                    <twig:Card:Footer class="p-4 border-t border-gray-200 flex justify-between">
     
-                        {# Précédent #}
+                        
                         {% if item.currentPage > 1 %}
                             <twig:Button
                                 variant="outline"
@@ -90,7 +98,7 @@
                             <twig:Button variant="outline" disabled>Précédent</twig:Button>
                         {% endif %}
 
-                        {# Suivant #}
+                        
                         {% if item.currentPage < item.totalPages %}
                             <twig:Button
                                 variant="outline"
