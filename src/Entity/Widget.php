@@ -93,28 +93,4 @@ class Widget
 
         return $this;
     }
-
-    public function getPage(): ?int
-    {
-        return $this->page;
-    }
-
-    public function setPage(int $page): static
-    {
-        $this->page = $page;
-
-        return $this;
-    }
-
-    public function getPageSize(): ?int
-    {
-        return $this->pageSize;
-    }
-
-    public function setPageSize(int $pageSize): static
-    {
-        $this->pageSize = $pageSize;
-
-        return $this;
-    }
 }
