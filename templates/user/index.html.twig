@@ -32,7 +32,7 @@
                         <tr class="border-t">
                             <td class="p-4">{{ user.id }}</td>
                             <td class="p-4">{{ user.email }}</td>
-                            <td class="p-4">{{ user.roles|join(', ') }}</td>
+                            <td class="p-4">{{ user.roles[0] }}</td>
                             <td class="p-4 flex gap-2">
                                 <twig:Button
                                     size="icon"
@@ -47,7 +47,7 @@
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="5">no records found</td>
+                            <td colspan="5">Aucun utilisateur trouvé</td>
                         </tr>
                     {% endfor %}
                 </tbody>
