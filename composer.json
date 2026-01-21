@@ -93,6 +93,7 @@
         }
     },
     "require-dev": {
+        "doctrine/doctrine-fixtures-bundle": "*",
         "phpunit/phpunit": "^12.5",
         "symfony/stopwatch": "8.0.*",
         "symfony/ux-toolkit": "^2.32",
