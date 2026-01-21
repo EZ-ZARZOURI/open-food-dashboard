@@ -19,8 +19,17 @@ final class UserController extends AbstractController
     public function index(UserRepository $userRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        // Récupérer tous les utilisateurs
+        $allUsers = $userRepository->findAll();
+
+        // Filtrer pour enlever l'utilisateur connecté
+        $users = array_filter($allUsers, function(User $user) {
+            return $user !== $this->getUser();
+        });
+
         return $this->render('user/index.html.twig', [
-            'users' => $userRepository->findAll(),
+            'users' => $users,
         ]);
     }
 
