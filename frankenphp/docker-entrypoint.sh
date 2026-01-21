@@ -50,6 +50,13 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 		else
 			php bin/console doctrine:schema:update --force
 		fi
+
+		# Créer l'administrateur si la fixture existe
+		if [ -f bin/console ]; then
+			echo "Vérification admin..."
+			php bin/console doctrine:fixtures:load --no-interaction || true
+		fi
+
 	fi
 
 	echo 'PHP app ready!'
