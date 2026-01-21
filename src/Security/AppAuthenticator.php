@@ -48,15 +48,10 @@ class AppAuthenticator extends AbstractLoginFormAuthenticator
         $roles = $token->getRoleNames();
 
         if (in_array('ROLE_ADMIN', $roles, true)) {
-            return new RedirectResponse($this->urlGenerator->generate('admin_dashboard'));
+            return new RedirectResponse($this->urlGenerator->generate('app_user_index'));
         }
         return new RedirectResponse($this->urlGenerator->generate('dashboard_home'));
     
-
-        // For example:
-        //return new RedirectResponse($this->urlGenerator->generate('open_food_home'));
-        //return new RedirectResponse($this->urlGenerator->generate('dashboard_home'));
-        //throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
     }
 
     protected function getLoginUrl(Request $request): string
