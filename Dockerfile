@@ -23,19 +23,6 @@ RUN set -eux; \
     apt-get install -y nodejs
 
 
-# Copier package.json + package-lock.json pour le cache
-COPY package*.json ./
-
-# Installer npm
-RUN npm install
-
-# Copier tout le code pour que Webpack trouve les fichiers
-COPY . .
-
-# Compiler les assets
-RUN npm run build
-
-
 # persistent / runtime deps
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -94,28 +81,5 @@ RUN set -eux; \
 
 COPY --link frankenphp/conf.d/20-app.dev.ini $PHP_INI_DIR/app.conf.d/
 
-CMD [ "frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile", "--watch" ]
+CMD ["docker-entrypoint", "frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile", "--watch"]
 
-# Prod FrankenPHP image
-FROM frankenphp_base AS frankenphp_prod
-
-ENV APP_ENV=prod
-
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
-
-COPY --link frankenphp/conf.d/20-app.prod.ini $PHP_INI_DIR/app.conf.d/
-
-# prevent the reinstallation of vendors at every changes in the source code
-COPY --link composer.* symfony.* ./
-RUN set -eux; \
-	composer install --no-cache --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress
-
-# copy sources
-COPY --link --exclude=frankenphp/ . ./
-
-RUN set -eux; \
-	mkdir -p var/cache var/log var/share; \
-	composer dump-autoload --classmap-authoritative --no-dev; \
-	composer dump-env prod; \
-	composer run-script --no-dev post-install-cmd; \
-	chmod +x bin/console; sync;
