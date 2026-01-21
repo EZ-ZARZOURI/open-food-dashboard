@@ -28,3 +28,8 @@ yarn-error.log
 /.DS_Store
 /thumbs.db
 
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###
