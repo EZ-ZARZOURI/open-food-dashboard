@@ -1,0 +1,28 @@
+<div id="edit-widget-form" class="hidden fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h2 class="text-lg font-semibold mb-4">Modifier le widget</h2>
+
+        <form method="POST" action="{{ path('dashboard_edit_widget') }}">
+            <input type="hidden" name="id" id="edit-widget-id">
+
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700">Type de filtre</label>
+                <select name="filterType" id="edit-filterType" class="w-full border rounded px-2 py-1">
+                    <option value="categorie">Catégorie</option>
+                    <option value="marque">Marque</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700">Valeur</label>
+                <select name="filterValue" id="edit-filterValue" class="w-full border rounded px-2 py-1">
+                </select>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <button type="button" id="close-edit-form" class="px-3 py-1 border rounded">Annuler</button>
+                <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>

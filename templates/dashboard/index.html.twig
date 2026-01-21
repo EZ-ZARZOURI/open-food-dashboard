@@ -3,18 +3,91 @@
 {% block body %}
 <div class="min-h-screen bg-gray-100">
     {% include 'partials/navbar.html.twig' %}
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const editButtons = document.querySelectorAll('.edit-widget-btn');
+        const modal = document.getElementById('edit-widget-form');
+        const inputId = document.getElementById('edit-widget-id');
+        const inputType = document.getElementById('edit-filterType');
+        const inputValue = document.getElementById('edit-filterValue');
+        const closeBtn = document.getElementById('close-edit-form');
 
+        editButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                inputId.value = btn.dataset.id;
+                inputType.value = btn.dataset.type;
+                inputValue.value = btn.dataset.value || '';
+                modal.classList.remove('hidden');
+            });
+        });
+
+        closeBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+    });
+    </script>
     <main class="p-6">
         <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-bold">Dashboard</h1>
+        <h1 class="text-2xl font-bold">Dashboard</h1>
 
-            <twig:Button size="icon" variant="outline" aria-label="Ajouter Widget"
-                        onclick="alert('Ici tu peux ajouter un widget !')">
-                {{ ux_icon('heroicons:plus', { class: 'w-5 h-5 text-blue-600' }) }}
-            </twig:Button>
-        </div>
+        {# BOUTON AJOUT WIDGET #}
+        <twig:Button size="icon" variant="outline" id="toggle-widget-form">
+            {{ ux_icon('heroicons:plus', { class: 'w-5 h-5 text-blue-600' }) }}
+        </twig:Button>
+    </div>
 
+    {% include 'dashboard/_add_widget_form.html.twig' %}
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const addBtn = document.getElementById('toggle-widget-form');
+            const addModal = document.getElementById('add-widget-modal');
+            const closeAddBtn = document.getElementById('close-add-modal');
+
+            const addFilterType = document.getElementById('add-filterType');
+            const addFilterValue = document.getElementById('add-filterValue');
+            const addFilterValueContainer = document.getElementById('add-filterValueContainer');
+
+            const categories = ['Snacks', 'Chocolates', 'Beverages', 'Biscuits'];
+            const brands = ['Coca-Cola', 'Nestlé', 'Pepsi', 'Ferrero'];
+
+            // Ouvrir modal ajout
+            addBtn.addEventListener('click', () => {
+                addModal.classList.remove('hidden');
+            });
+
+            // Fermer modal ajout
+            closeAddBtn.addEventListener('click', () => {
+                addModal.classList.add('hidden');
+                addFilterType.value = '';
+                addFilterValue.innerHTML = '<option value="">-- Sélectionner --</option>';
+                addFilterValueContainer.classList.add('hidden');
+            });
+
+            // Mettre à jour le select Valeur selon le type
+            addFilterType.addEventListener('change', function () {
+                const type = this.value;
+                addFilterValue.innerHTML = '<option value="">-- Sélectionner --</option>';
+
+                if (!type) {
+                    addFilterValueContainer.classList.add('hidden');
+                    return;
+                }
+
+                const values = type === 'categorie' ? categories : brands;
+
+                values.forEach(v => {
+                    const option = document.createElement('option');
+                    option.value = v;
+                    option.textContent = v;
+                    addFilterValue.appendChild(option);
+                });
+
+                addFilterValueContainer.classList.remove('hidden');
+            });
+        });
+
+    </script>
         {# Conteneur horizontal des widgets #}
         <div class="flex gap-4 overflow-x-auto pb-4">
             {% for item in widgetsWithProducts %}
@@ -28,7 +101,7 @@
                     <twig:Card:Header class="flex justify-between items-center border-b border-gray-200 p-4">
                         <div>
                             <twig:Card:Title class="font-semibold text-lg">
-                                {{ widget.filterType ?: 'Produits' }}
+                                {{ (widget.filterType ?: 'Produits')|upper }}
                                 {% if widget.filterValue %} : {{ widget.filterValue|upper }}{% endif %}
                             </twig:Card:Title>
                             {# <twig:Card:Description class="text-sm text-gray-500">
@@ -37,7 +110,15 @@
                         </div>
 
                         <div class="flex gap-2">
-                            <twig:Button size="icon" variant="outline" aria-label="Modifier">
+                            <twig:Button
+                                size="icon"
+                                variant="outline"
+                                aria-label="Modifier"
+                                class="edit-widget-btn"
+                                data-id="{{ widget.id }}"
+                                data-type="{{ widget.filterType }}"
+                                data-value="{{ widget.filterValue }}"
+                            >
                                 {{ ux_icon('heroicons:pencil', { class: 'w-5 h-5 text-blue-600' }) }}
                             </twig:Button>
                             <twig:Button size="icon" variant="outline" aria-label="Supprimer">
@@ -83,9 +164,7 @@
                     </twig:Card:Content>
 
                     {# PAGINATION WIDGET #}
-                   <twig:Card:Footer class="p-4 border-t border-gray-200 flex justify-between">
-    
-                        
+                   {# <twig:Card:Footer class="p-4 border-t border-gray-200 flex justify-between">    
                         {% if item.currentPage > 1 %}
                             <twig:Button
                                 variant="outline"
@@ -93,12 +172,10 @@
                                     ('page_' ~ widget.id): item.currentPage - 1
                                 }) }}">
                                 Précédent
-                            </twig:Button>
-                        {% else %}
+                            </twig:Button> #}
+                        {# {% else %}
                             <twig:Button variant="outline" disabled>Précédent</twig:Button>
-                        {% endif %}
-
-                        
+                        {% endif %}      
                         {% if item.currentPage < item.totalPages %}
                             <twig:Button
                                 variant="outline"
@@ -106,16 +183,72 @@
                                     ('page_' ~ widget.id): item.currentPage + 1
                                 }) }}">
                                 Suivant
-                            </twig:Button>
-                        {% else %}
+                            </twig:Button> #}
+                        {# {% else %}
                             <twig:Button variant="outline" disabled>Suivant</twig:Button>
                         {% endif %}
 
-                    </twig:Card:Footer>
+                    </twig:Card:Footer> #}
                     </twig:Card>
 
             {% endfor %}
         </div>
     </main>
 </div>
+{# FORMULAIRE MODIFICATION WIDGET #}
+{% include 'dashboard/_edit_widget_form.html.twig' %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const editButtons = document.querySelectorAll('.edit-widget-btn');
+    const modal = document.getElementById('edit-widget-form');
+    const inputId = document.getElementById('edit-widget-id');
+    const inputType = document.getElementById('edit-filterType');
+    const inputValue = document.getElementById('edit-filterValue');
+    const closeBtn = document.getElementById('close-edit-form');
+
+    
+    const optionsByType = {
+    categorie: ['Snacks', 'Chocolates', 'Beverages', 'Biscuits'],
+    marque: ['Coca-Cola', 'Nestlé', 'Pepsi', 'Ferrero']
+    };
+
+
+    function fillValues(type, selectedValue) {
+    inputValue.innerHTML = ''; 
+    if (!optionsByType[type]) return; 
+    optionsByType[type].forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        if (val === selectedValue) opt.selected = true;
+        inputValue.appendChild(opt);
+    });
+    }
+
+
+    editButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const type = btn.dataset.type;
+            const value = btn.dataset.value || '';
+
+            inputId.value = btn.dataset.id;
+            inputType.value = type;
+
+            fillValues(type, value); 
+
+            modal.classList.remove('hidden');
+        });
+    });
+
+    // Mettre à jour le select Valeur si le Type change
+    inputType.addEventListener('change', () => {
+        fillValues(inputType.value, ''); // reset valeur si type change
+    });
+
+    closeBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+    });
+});
+
+</script>
 {% endblock %}

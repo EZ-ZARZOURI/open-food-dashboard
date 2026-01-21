@@ -1,0 +1,33 @@
+{# FORMULAIRE AJOUT WIDGET #}
+<div id="add-widget-modal" class="hidden fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h2 class="text-lg font-semibold mb-4">Ajouter un widget</h2>
+
+        <form method="POST" action="{{ path('dashboard_add_widget') }}">
+            <div class="mb-3">
+                <label for="add-filterType" class="block text-sm font-medium text-gray-700">
+                    Type de filtre
+                </label>
+                <select id="add-filterType" name="filterType" class="mt-1 block w-full rounded-md border-gray-300">
+                    <option value="">-- Sélectionner --</option>
+                    <option value="categorie">Catégorie</option>
+                    <option value="marque">Marque</option>
+                </select>
+            </div>
+
+            <div class="mb-3 hidden" id="add-filterValueContainer">
+                <label for="add-filterValue" class="block text-sm font-medium text-gray-700">
+                    Valeur du filtre
+                </label>
+                <select id="add-filterValue" name="filterValue" class="mt-1 block w-full rounded-md border-gray-300">
+                    <option value="">-- Sélectionner --</option>
+                </select>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <button type="button" id="close-add-modal" class="px-3 py-1 border rounded">Annuler</button>
+                <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded">Créer Widget</button>
+            </div>
+        </form>
+    </div>
+</div>
