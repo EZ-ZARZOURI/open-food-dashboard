@@ -1,51 +1,90 @@
-# Symfony Docker
+# Dashboard Open Food Facts - Projet Symfony
 
-A [Docker](https://www.docker.com/)-based installer and runtime for the [Symfony](https://symfony.com) web framework,
-with [FrankenPHP](https://frankenphp.dev) and [Caddy](https://caddyserver.com/) inside!
+## Description du projet
 
-![CI](https://github.com/dunglas/symfony-docker/workflows/CI/badge.svg)
+Application web développée avec **Symfony 8** permettant de consulter et d'exploiter des données issues de l'API **Open Food Facts** à travers un **Dashboard personnalisable**.
+Chaque utilisateur peut configurer ses widgets pour afficher des produits filtrés par catégorie ou marque.
 
-## Getting Started
+---
 
-1. If not already done, [install Docker Compose](https://docs.docker.com/compose/install/) (v2.10+)
-2. Run `docker compose build --pull --no-cache` to build fresh images
-3. Run `docker compose up --wait` to set up and start a fresh Symfony project
-4. Open `https://localhost` in your favorite web browser and [accept the auto-generated TLS certificate](https://stackoverflow.com/a/15076602/1352334)
-5. Run `docker compose down --remove-orphans` to stop the Docker containers.
+## Prérequis
 
-## Features
+* Docker
+* Docker Compose
 
-- Production, development and CI ready
-- Just 1 service by default
-- Blazing-fast performance thanks to [the worker mode of FrankenPHP](https://frankenphp.dev/docs/worker/)
-- [Installation of extra Docker Compose services](docs/extra-services.md) with Symfony Flex
-- Automatic HTTPS (in dev and prod)
-- HTTP/3 and [Early Hints](https://symfony.com/blog/new-in-symfony-6-3-early-hints) support
-- Real-time messaging thanks to a built-in [Mercure hub](https://symfony.com/doc/current/mercure.html)
-- [Vulcain](https://vulcain.rocks) support
-- Native [XDebug](docs/xdebug.md) integration
-- Super-readable configuration
+---
 
-**Enjoy!**
+## Installation et lancement
 
-## Docs
+Le projet est entièrement conteneurisé avec Docker et utilise **FrankenPHP** pour des performances optimales et le hot reload.
 
-1. [Options available](docs/options.md)
-2. [Using Symfony Docker with an existing project](docs/existing-project.md)
-3. [Support for extra services](docs/extra-services.md)
-4. [Deploying in production](docs/production.md)
-5. [Debugging with Xdebug](docs/xdebug.md)
-6. [TLS Certificates](docs/tls.md)
-7. [Using MySQL instead of PostgreSQL](docs/mysql.md)
-8. [Using Alpine Linux instead of Debian](docs/alpine.md)
-9. [Using a Makefile](docs/makefile.md)
-10. [Updating the template](docs/updating.md)
-11. [Troubleshooting](docs/troubleshooting.md)
+1. Cloner le dépôt :
 
-## License
+```bash
+git clone <URL_DU_DEPOT>
+```
 
-Symfony Docker is available under the MIT License.
+2. Lancer les conteneurs Docker :
 
-## Credits
+```bash
+docker compose up --build 
+```
 
-Created by [Kévin Dunglas](https://dunglas.dev), co-maintained by [Maxime Helias](https://twitter.com/maxhelias) and sponsored by [Les-Tilleuls.coop](https://les-tilleuls.coop).
+3. Accéder à l'application :
+
+* **Interface d’administration des utilisateurs :** https://localhost:8000/user
+
+  * Identifiants par défaut (Fixtures) :
+
+    * Admin : `admin@gmail.com` / `password`
+
+* **Dashboard :** https://localhost:8000/dashboard
+
+---
+
+## Sécurité
+
+* **Authentification :** Système standard Symfony.
+* **Gestion des accès :**
+
+  * Les utilisateurs ne peuvent pas s’inscrire eux-mêmes.
+  * Seul un administrateur peut créer, modifier ou supprimer des comptes.
+* **Protection CSRF :** Activée sur tous les formulaires et actions critiques.
+* **Isolation des données :** Chaque utilisateur ne peut voir ou modifier que ses propres widgets (vérification dans `DashboardController`).
+* **Gestion complète par l’admin :** création, modification, suppression, attribution de rôles.
+* **Note sur le test technique :**
+
+  * Les fonctionnalités de 2FA et de blocage après 5 tentatives sont prévues mais non implémentées.
+
+---
+
+## Dashboard & Widgets
+
+Le Dashboard est conçu comme une **collection de widgets dynamiques** :
+
+* **Filtrage :** par catégorie ou marque via l'API Open Food Facts.
+* **Persistance :** chaque configuration de widget est sauvegardée en base pour chaque utilisateur.
+* **Actions disponibles pour l’utilisateur :**
+
+  * Ajouter ou retirer des widgets
+  * Modifier la configuration des widgets (type et valeur du filtre)
+* **Affichage :** chaque widget montre 4 produits selon le filtre choisi.
+* **Note :** le glisser-déposer pour réorganiser les widgets n’est pas encore implémenté.
+
+---
+
+## API Open Food Facts
+
+* Les widgets consomment les données de l’API via le **service `ProductService`**.
+
+---
+
+## Stack utilisée
+
+* **Framework :** Symfony 8
+* **Serveur web :** FrankenPHP avec hot reload
+* **Base de données :** PostgreSQL
+* **Interface utilisateur :** Shadcn UI via Symfony UX + Tailwind CSS
+* **Containerisation :** Docker + Docker Compose
+
+
