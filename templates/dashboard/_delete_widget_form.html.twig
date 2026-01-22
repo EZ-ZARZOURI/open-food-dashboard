@@ -1,0 +1,10 @@
+<form method="post"
+      action="{{ path('dashboard_delete_widget', { id: widget.id }) }}"
+      onsubmit="return confirm('Êtes-vous sûr(e) de vouloir supprimer ce widget ?');"
+      class="inline">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete_widget_' ~ widget.id) }}">
+    <twig:Button type="submit" size="icon" variant="outline" aria-label="Supprimer">
+        {{ ux_icon('heroicons:trash', { class: 'w-5 h-5 text-red-600' }) }}
+    </twig:Button>
+</form>
+

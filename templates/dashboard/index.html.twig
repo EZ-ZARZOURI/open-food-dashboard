@@ -121,9 +121,7 @@
                             >
                                 {{ ux_icon('heroicons:pencil', { class: 'w-5 h-5 text-blue-600' }) }}
                             </twig:Button>
-                            <twig:Button size="icon" variant="outline" aria-label="Supprimer">
-                                {{ ux_icon('heroicons:trash', { class: 'w-5 h-5 text-red-600' }) }}
-                            </twig:Button>
+                            {% include 'dashboard/_delete_widget_form.html.twig' %}                         
                         </div>
                     </twig:Card:Header>
 
