@@ -83,3 +83,4 @@ COPY --link frankenphp/conf.d/20-app.dev.ini $PHP_INI_DIR/app.conf.d/
 
 CMD ["docker-entrypoint", "frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile", "--watch"]
 
+

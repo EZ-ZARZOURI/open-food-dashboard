@@ -18,7 +18,6 @@ services:
       SYMFONY_VERSION: ${SYMFONY_VERSION:-}
       STABILITY: ${STABILITY:-stable}
     volumes:
-      - ./symfony-docker:/var/www/html
       - caddy_data:/data
       - caddy_config:/config
     ports:

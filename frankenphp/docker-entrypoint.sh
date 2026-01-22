@@ -2,64 +2,78 @@
 set -e
 
 if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
-	# Install the project the first time PHP is started
-	# After the installation, the following block can be deleted
-	if [ ! -f composer.json ]; then
-		rm -Rf tmp/
-		composer create-project "symfony/skeleton $SYMFONY_VERSION" tmp --stability="$STABILITY" --prefer-dist --no-progress --no-interaction --no-install
 
-		cd tmp
-		cp -Rp . ..
-		cd -
-		rm -Rf tmp/
+    
+    if [ ! -f composer.json ]; then
+        echo "Creating Symfony project..."
+        rm -Rf tmp/
+        composer create-project "symfony/skeleton $SYMFONY_VERSION" tmp --stability="$STABILITY" --prefer-dist --no-progress --no-interaction --no-install
 
-		composer require "php:>=$PHP_VERSION"
-		composer config --json extra.symfony.docker 'true'
+        cd tmp
+        cp -Rp . ..
+        cd -
+        rm -Rf tmp/
 
-		if grep -q ^DATABASE_URL= .env; then
-			echo 'To finish the installation please press Ctrl+C to stop Docker Compose and run: docker compose up --build --wait'
-			sleep infinity
-		fi
-	fi
+        composer require "php:>=$PHP_VERSION"
+        composer config --json extra.symfony.docker 'true'
 
-	if [ -z "$(ls -A 'vendor/' 2>/dev/null)" ]; then
-		composer install --prefer-dist --no-progress --no-interaction
-	fi
+        if grep -q ^DATABASE_URL= .env; then
+            echo 'To finish installation, press Ctrl+C and run: docker compose up --build --wait'
+            sleep infinity
+        fi
+    fi
 
-	# Display information about the current project
-	# Or about an error in project initialization
-	php bin/console -V
+    # Installer les dépendances PHP
+    if [ -z "$(ls -A 'vendor/' 2>/dev/null)" ]; then
+        echo "Installing PHP dependencies..."
+        composer install --prefer-dist --no-progress --no-interaction
+    fi
 
-		if grep -q ^DATABASE_URL= .env; then
-		echo 'Waiting for database to be ready...'
-		ATTEMPTS_LEFT_TO_REACH_DATABASE=60
-		until [ $ATTEMPTS_LEFT_TO_REACH_DATABASE -eq 0 ] || DATABASE_ERROR=$(php bin/console dbal:run-sql -q "SELECT 1" 2>&1); do
-			sleep 1
-			ATTEMPTS_LEFT_TO_REACH_DATABASE=$((ATTEMPTS_LEFT_TO_REACH_DATABASE - 1))
-			echo "Waiting for DB... $ATTEMPTS_LEFT_TO_REACH_DATABASE attempts left"
-		done
+    php bin/console -V
 
-		if [ $ATTEMPTS_LEFT_TO_REACH_DATABASE -eq 0 ]; then
-			echo "Database not reachable"
-			exit 1
-		fi
+    # Vérification et migrations base de données 
+    if grep -q ^DATABASE_URL= .env; then
+        echo 'Waiting for database to be ready...'
+        ATTEMPTS_LEFT=60
+        until [ $ATTEMPTS_LEFT -eq 0 ] || DATABASE_ERROR=$(php bin/console dbal:run-sql -q "SELECT 1" 2>&1); do
+            sleep 1
+            ATTEMPTS_LEFT=$((ATTEMPTS_LEFT - 1))
+            echo "Waiting for DB... $ATTEMPTS_LEFT attempts left"
+        done
 
-		# === CRÉATION DES TABLES  ===
-		if [ "$(find ./migrations -iname '*.php' -print -quit)" ]; then
-			php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
-		else
-			php bin/console doctrine:schema:update --force
-		fi
+        if [ $ATTEMPTS_LEFT -eq 0 ]; then
+            echo "Database not reachable"
+            exit 1
+        fi
 
-		# Créer l'administrateur si la fixture existe
-		if [ -f bin/console ]; then
-			echo "Vérification admin..."
-			php bin/console doctrine:fixtures:load --no-interaction || true
-		fi
+        # Migrations
+        if [ "$(find ./migrations -iname '*.php' -print -quit)" ]; then
+            php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
+        else
+            php bin/console doctrine:schema:update --force
+        fi
 
-	fi
+        # Fixtures
+        if [ -f bin/console ]; then
+            echo "Loading fixtures..."
+            php bin/console doctrine:fixtures:load --no-interaction || true
+        fi
+    fi
 
-	echo 'PHP app ready!'
+    echo 'PHP app ready'
+
+    # Node / npm 
+    if [ -f package.json ]; then
+        echo 'Installing Node dependencies...'
+        npm install
+
+        echo 'Starting frontend dev server...'
+        npm run dev & 
+    fi
+
+    # FrankenPHP 
+    echo 'Starting FrankenPHP...'
+    exec frankenphp run --config /etc/frankenphp/Caddyfile --watch
 fi
 
 exec docker-php-entrypoint "$@"
