@@ -131,4 +131,28 @@ class DashboardController extends AbstractController
 
         return $this->redirectToRoute('dashboard_home');
     }
+
+    #[Route('/dashboard/delete-widget/{id}', name: 'dashboard_delete_widget', methods: ['POST'])]
+    public function deleteWidget(
+        Widget $widget,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $user = $this->getUser();
+        if (!$user || $widget->getOwner() !== $user) {
+            throw $this->createAccessDeniedException();
+        }
+
+        // Vérification CSRF
+        $submittedToken = $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('delete_widget_' . $widget->getId(), $submittedToken)) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        }
+
+        $em->remove($widget);
+        $em->flush();
+
+        return $this->redirectToRoute('dashboard_home');
+    }
+
 }
