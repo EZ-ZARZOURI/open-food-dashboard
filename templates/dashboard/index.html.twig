@@ -26,6 +26,34 @@
         });
     });
     </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const messages = document.querySelectorAll('.flash-message');
+
+        messages.forEach((msg, i) => {
+            setTimeout(() => {
+                msg.classList.remove('opacity-0', 'translate-x-4'); // fait apparaître
+            }, 100 * i);
+
+            // Faire disparaître après 3 secondes
+            setTimeout(() => {
+                msg.classList.add('opacity-0', 'translate-x-4');
+                setTimeout(() => msg.remove(), 300);
+            }, 3000 + (i * 100));
+        });
+    });
+    </script>
+
+    <div id="flash-messages" class="fixed top-4 right-4 space-y-2 z-50">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="flash-message {{ label }} bg-gray-800 text-white px-4 py-2 rounded shadow-md opacity-0 transform translate-x-4 transition-all duration-300">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+
     <main class="p-6">
         <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold">Dashboard</h1>

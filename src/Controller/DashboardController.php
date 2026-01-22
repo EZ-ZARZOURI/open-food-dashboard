@@ -93,6 +93,10 @@ class DashboardController extends AbstractController
 
             $em->persist($widget);
             $em->flush();
+
+            $this->addFlash('success', 'Widget ajouté avec succès !');
+        } else {
+            $this->addFlash('error', 'Impossible d’ajouter le widget. Veuillez remplir tous les champs.');
         }
 
         return $this->redirectToRoute('dashboard_home');
@@ -106,7 +110,8 @@ class DashboardController extends AbstractController
     ): Response {
         $user = $this->getUser();
         if (!$user) {
-            throw $this->createAccessDeniedException();
+            $this->addFlash('error', 'Utilisateur non authentifié.');
+            return $this->redirectToRoute('dashboard_home');
         }
 
         $id = $request->request->get('id');
@@ -114,20 +119,27 @@ class DashboardController extends AbstractController
         $filterValue = $request->request->get('filterValue');
 
         if (!$id || !$filterType || !$filterValue) {
+            $this->addFlash('error', 'Champs manquants pour la modification.');
             return $this->redirectToRoute('dashboard_home');
         }
 
         $widget = $widgetRepo->find($id);
 
         if (!$widget || $widget->getOwner() !== $user) {
-            throw $this->createAccessDeniedException();
+            $this->addFlash('error', 'Widget introuvable ou accès refusé.');
+            return $this->redirectToRoute('dashboard_home');
         }
 
-        $widget
-            ->setFilterType($filterType)
-            ->setFilterValue($filterValue);
+        try {
+            $widget->setFilterType($filterType)
+                ->setFilterValue($filterValue);
 
-        $em->flush();
+            $em->flush();
+
+            $this->addFlash('success', 'Widget modifié avec succès !');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de la modification du widget.');
+        }
 
         return $this->redirectToRoute('dashboard_home');
     }
@@ -139,20 +151,29 @@ class DashboardController extends AbstractController
         EntityManagerInterface $em
     ): Response {
         $user = $this->getUser();
+
         if (!$user || $widget->getOwner() !== $user) {
-            throw $this->createAccessDeniedException();
+            $this->addFlash('error', 'Suppression non autorisée.');
+            return $this->redirectToRoute('dashboard_home');
         }
 
-        // Vérification CSRF
         $submittedToken = $request->request->get('_token');
         if (!$this->isCsrfTokenValid('delete_widget_' . $widget->getId(), $submittedToken)) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('dashboard_home');
         }
 
-        $em->remove($widget);
-        $em->flush();
+        try {
+            $em->remove($widget);
+            $em->flush();
+
+            $this->addFlash('success', 'Widget supprimé avec succès !');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de la suppression du widget.');
+        }
 
         return $this->redirectToRoute('dashboard_home');
     }
+
 
 }

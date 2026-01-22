@@ -39,24 +39,30 @@ final class UserController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $user = new User();
-
-        // Formulaire avec mot de passe obligatoire
         $form = $this->createForm(UserType::class, $user, ['is_new' => true]);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Récupérer le rôle choisi
-            $role = $form->get('role')->getData();
-            $user->setRoles([$role]);
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                try {
+                    $role = $form->get('role')->getData();
+                    $user->setRoles([$role]);
 
-            // Hash du mot de passe
-            $plainPassword = $form->get('password')->getData();
-            $user->setPassword(password_hash($plainPassword, PASSWORD_DEFAULT));
+                    $plainPassword = $form->get('password')->getData();
+                    $user->setPassword(password_hash($plainPassword, PASSWORD_DEFAULT));
 
-            $entityManager->persist($user);
-            $entityManager->flush();
+                    $entityManager->persist($user);
+                    $entityManager->flush();
 
-            return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+                    $this->addFlash('success', 'Utilisateur créé avec succès.');
+
+                    return $this->redirectToRoute('app_user_index');
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Erreur lors de la création de l’utilisateur.');
+                }
+            } else {
+                $this->addFlash('error', 'Veuillez corriger les erreurs du formulaire.');
+            }
         }
 
         return $this->render('user/new.html.twig', [
@@ -64,9 +70,6 @@ final class UserController extends AbstractController
             'form' => $form,
         ]);
     }
-
-
-
 
     #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
     public function show(User $user): Response
@@ -82,29 +85,35 @@ final class UserController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        // Formulaire avec mot de passe facultatif
         $form = $this->createForm(UserType::class, $user, ['is_new' => false]);
 
-        // Préremplir le rôle actuel
         $currentRole = in_array('ROLE_ADMIN', $user->getRoles()) ? 'ROLE_ADMIN' : 'ROLE_USER';
         $form->get('role')->setData($currentRole);
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Mettre à jour le rôle
-            $role = $form->get('role')->getData();
-            $user->setRoles([$role]);
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                try {
+                    $role = $form->get('role')->getData();
+                    $user->setRoles([$role]);
 
-            // Hash du mot de passe seulement si saisi
-            $plainPassword = $form->get('password')->getData();
-            if ($plainPassword) {
-                $user->setPassword(password_hash($plainPassword, PASSWORD_DEFAULT));
+                    $plainPassword = $form->get('password')->getData();
+                    if ($plainPassword) {
+                        $user->setPassword(password_hash($plainPassword, PASSWORD_DEFAULT));
+                    }
+
+                    $entityManager->flush();
+
+                    $this->addFlash('success', 'Utilisateur modifié avec succès.');
+
+                    return $this->redirectToRoute('app_user_index');
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Erreur lors de la modification de l’utilisateur.');
+                }
+            } else {
+                $this->addFlash('error', 'Le formulaire contient des erreurs.');
             }
-
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('user/edit.html.twig', [
@@ -117,11 +126,21 @@ final class UserController extends AbstractController
     public function delete(Request $request, User $user, EntityManagerInterface $entityManager): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($user);
-            $entityManager->flush();
+
+        if (!$this->isCsrfTokenValid('delete'.$user->getId(), $request->getPayload()->getString('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_user_index');
         }
 
-        return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+        try {
+            $entityManager->remove($user);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Utilisateur supprimé avec succès.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de la suppression de l’utilisateur.');
+        }
+
+        return $this->redirectToRoute('app_user_index');
     }
 }
